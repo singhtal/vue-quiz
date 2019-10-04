@@ -12,12 +12,12 @@
             <b-list-group v-for="(answer, index) in answers" :key="index">
                 <b-list-group-item 
                 @click="selectAnswer(index)"
-                :class="[selectedIndex === index ? 'correct' : '']"
+                :class="[selectedIndex === index ? 'selected' : '']"
                 >{{answer}}
                 </b-list-group-item>
             </b-list-group>
 
-            <b-button variant="primary" href="#">Submit</b-button>
+            <b-button @click="submitAnswer" variant="primary" href="#">Submit</b-button>
             <b-button @click="next"
             variant="success" href="#">Next</b-button>
         </b-jumbotron>
@@ -25,32 +25,68 @@
 </template>
 
 <script>
+
+import _ from 'lodash'
     export default {
         props: {
             currentQuestion: Object,
-            next: Function
+            next: Function,
+            increment: Function
         },
         data(){
             return{
-                selectedIndex: null
+                selectedIndex: null,
+                shuffledAnswers: []
             }
         },
         computed: {
             answers(){
+                let answers = [];
                 if(this.currentQuestion){
-                    let answers = [...this.currentQuestion.incorrect_answers];
+                    answers = [...this.currentQuestion.incorrect_answers];
                     answers.push(this.currentQuestion.correct_answer)
                 } else {
-                    let answers = [];
+                    answers = [];
                 }
 
                 return answers;
 
             }
         },
+        watch: {
+               currentQuestion: {
+                   immediate: true,
+                   handler(){
+                    this.selectedAnswer = [],
+                    this.shuffleAnswers();      
+                   }
+               }
+
+        },
         methods: {
             selectAnswer(index){
+                console.log('selected index - '+index, ' correct index - unknown');
                 this.selectedIndex = index;
+            },
+            submitAnswer(){
+                console.log('submit fired');
+
+                let isCorrect = false;
+
+                if(this.selectedIndex == this.correctIndex){
+                    isCorrect = true;
+                }
+
+                this.increment(isCorrect);
+
+                // return isCorrect;
+            },
+            shuffleAnswers(){
+                console.log('shuffling answers');
+                let answers = [...this.currentQuestion.incorrect_answers, this.currentQuestion.correct_answer ];
+                this.shuffledAnswers = _.shuffle(answers);
+
+                return this.shuffledAnswers;
             }
         }
     }
@@ -68,10 +104,10 @@
     margin: 0 10px;
 }
 .selected{
-    background-color: blue;
+    background-color: lightblue;
 }
 .correct{
-    background-color: green;
+    background-color: lightgreen;
 }
 .incorrect{
     background-color: red;

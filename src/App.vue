@@ -1,6 +1,10 @@
 <template>
   <div id="app">
-    <Header />
+    <Header 
+    :index="index"
+    :numCorrect="numCorrect"
+    :numTotal="numTotal"
+    />
 
     <b-container class="bv-example-row">
       <b-row>
@@ -10,6 +14,7 @@
         :currentQuestion="questions[index]"
         :index="index.toString()"
         :next="next"
+        :increment="increment"
         />
         
         </b-col>
@@ -34,22 +39,35 @@ export default {
   data(){
     return {
         questions: [],
-        index: 0
+        index: 0,
+        numCorrect: 0,
+        numTotal: 0
     }
   },
   methods: {
     next(){
       this.index++;
+    },
+    increment(isCorrect){
+      console.log('inside inc method');
+
+    if(isCorrect){
+      this.numCorrect++;
+    }
+    this.numTotal++;
     }
   },
   mounted: function(){
     fetch('https://opentdb.com/api.php?amount=10', {
-      method: 'get'
+      method: 'get',
+      dataType: JSON
     })
     .then((response) => {
+      //console.log('first response - ', JSON.stringify(response));
        return response.json();
     })
     .then((jsonData) => {
+      //console.log('response sent - ',  jsonData.results)
       this.questions = jsonData.results;
     })
   }
