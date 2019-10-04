@@ -12,12 +12,19 @@
             <b-list-group v-for="(answer, index) in answers" :key="index">
                 <b-list-group-item 
                 @click="selectAnswer(index)"
-                :class="[selectedIndex === index ? 'selected' : '']"
+                :class="answerClass(index)"
                 >{{answer}}
                 </b-list-group-item>
             </b-list-group>
 
-            <b-button @click="submitAnswer" variant="primary" href="#">Submit</b-button>
+            <b-button 
+                @click="submitAnswer" 
+                variant="primary" href="#"
+                :disabled="selectedIndex === null || answered"
+                >
+                Submit
+            </b-button>
+
             <b-button @click="next"
             variant="success" href="#">Next</b-button>
         </b-jumbotron>
@@ -36,7 +43,8 @@ import _ from 'lodash'
         data(){
             return{
                 selectedIndex: null,
-                shuffledAnswers: []
+                shuffledAnswers: [],
+                correctIndex: null
             }
         },
         computed: {
@@ -57,15 +65,16 @@ import _ from 'lodash'
                currentQuestion: {
                    immediate: true,
                    handler(){
+                    console.log('inside watch handler');
                     this.selectedAnswer = [],
-                    this.shuffleAnswers();      
+                    this.shuffleAnswers();
+                    this.answered = false;      
                    }
                }
 
         },
         methods: {
             selectAnswer(index){
-                console.log('selected index - '+index, ' correct index - unknown');
                 this.selectedIndex = index;
             },
             submitAnswer(){
@@ -78,6 +87,8 @@ import _ from 'lodash'
                 }
 
                 this.increment(isCorrect);
+                this.answered = true;
+                this.selectedIndex = null
 
                 // return isCorrect;
             },
@@ -85,8 +96,28 @@ import _ from 'lodash'
                 console.log('shuffling answers');
                 let answers = [...this.currentQuestion.incorrect_answers, this.currentQuestion.correct_answer ];
                 this.shuffledAnswers = _.shuffle(answers);
+                this.correctIndex = this.shuffledAnswers.indexOf(this.currentQuestion.correct_answer);
 
                 return this.shuffledAnswers;
+            },
+            answerClass(index){
+
+                let answerClass = '';
+
+                if(!this.answered && 
+                this.selectedIndex === index){
+                    answerClass = 'selected';
+                } else if(this.answered && 
+                this.selectedIndex == this.correctIndex){
+                    answerClass = 'correct';
+                } else if(this.answered && 
+                (this.selectedIndex == index) && 
+                index != this.correctIndex){
+                    answerClass = 'incorrect';
+                }
+                console.log(answerClass);
+
+                return answerClass;
             }
         }
     }
